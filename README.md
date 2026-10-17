@@ -22,4 +22,5 @@ public on the team website.
 - `events.json`: the schedule data (one row per practice, plus all-day meets/holidays)
 - `build.py`: turns `events.json` into `xcel-grp5.ics`
 - `check.py`: detects new or changed month images on the team site
+- `test_check.py`: scenario tests for `check.py` (`python3 -m unittest test_check`)
 - `CLAUDE.md`: the daily update procedure

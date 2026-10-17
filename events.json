@@ -11,6 +11,7 @@
       "sha256": "bba65e64a60831dbc28b2a89458bf66b043463a10f27ef4a1ca40d17478f9a66"
     }
   },
+  "ignored_images": [],
   "pools": {
     "DeNunzio": "DeNunzio Pool, Princeton University, 47 Faculty Rd, Princeton, NJ 08540",
     "PUMS": "Princeton Middle School (PUMS), 217 Walnut Ln, Princeton, NJ 08540",
