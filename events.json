@@ -3,8 +3,8 @@
   "source": "https://swimxcel.org/calendar/",
   "source_images": {
     "2026-10": {
-      "url": "https://swimxcel.org/wp-content/uploads/2026/09/Oct2026v2.jpg",
-      "sha256": "e450f0cee98e926fb779bc4532ab2eaf237c137dedaf937c41a27acfac768011"
+      "url": "https://swimxcel.org/wp-content/uploads/2026/10/Oct26v2a.jpg",
+      "sha256": "e49c4cc87e68057e4e940eb0f461e1a5e2966cec0f2507b0cc25ec88c2a7289b"
     },
     "2026-11": {
       "url": "https://swimxcel.org/wp-content/uploads/2026/10/Nov26v1.jpg",
@@ -37,7 +37,7 @@
     ["2026-10-17", "16:30", "19:00", "DeNunzio"],
     ["2026-10-18", "07:45", "10:30", "DeNunzio"],
     ["2026-10-19", "18:30", "21:00", "DeNunzio"],
-    ["2026-10-20", "18:30", "21:00", "DeNunzio"],
+    ["2026-10-20", "18:00", "20:30", "DeNunzio"],
     ["2026-10-22", "18:30", "21:00", "DeNunzio"],
     ["2026-10-26", "18:30", "21:00", "DeNunzio"],
     ["2026-10-27", "18:30", "21:00", "DeNunzio"],
