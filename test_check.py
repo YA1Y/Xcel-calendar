@@ -111,5 +111,53 @@ class CheckTest(unittest.TestCase):
         self.assertIsNone(check.month_from_filename(U + "Team-Photo-2025.jpg", 2026))
         self.assertEqual(check.month_from_filename(U + "Sept_2026.jpg", 2026), "2026-09")
 
+    def test_bot_check_page_that_persists_is_not_a_change(self):
+        def fetch(url):
+            raise check.NotAnImage(url)
+        with tempfile.TemporaryDirectory() as out:
+            lines, code = check.check(page(U + "2026/09/Oct2026v2.jpg", U + "2026/10/Nov26v1.jpg"),
+                                      data(), fetch, pathlib.Path(out), 2026)
+        self.assertEqual(code, 3)
+        self.assertNotIn("CHANGED", " ".join(lines))
+
+BOT_PAGE = b"<!DOCTYPE html><html><head><title>One moment, please...</title></head></html>"
+PNG = b"\x89PNG\r\n\x1a\n" + b"\0" * 20
+
+class DownloadTest(unittest.TestCase):
+    def setUp(self):
+        self.sleeps = []
+        self.orig = check.get, check.time.sleep
+        check.time.sleep = self.sleeps.append
+
+    def tearDown(self):
+        check.get, check.time.sleep = self.orig
+
+    def serve(self, *bodies):
+        replies = list(bodies)
+        check.get = lambda url: replies.pop(0)
+
+    def test_is_image(self):
+        self.assertTrue(check.is_image(PNG))
+        self.assertTrue(check.is_image(b"\xff\xd8\xff\xe0rest"))
+        self.assertTrue(check.is_image(b"RIFF\0\0\0\0WEBPVP8 "))
+        self.assertFalse(check.is_image(BOT_PAGE))
+        self.assertFalse(check.is_image(b""))
+
+    def test_bot_check_page_is_retried(self):
+        self.serve(BOT_PAGE, PNG)
+        self.assertEqual(check.get_image(U + "x.png"), PNG)
+        self.assertEqual(len(self.sleeps), 1)
+
+    def test_bot_check_page_every_time_raises(self):
+        self.serve(*[BOT_PAGE] * 4)
+        with self.assertRaises(check.NotAnImage):
+            check.get_image(U + "x.png", tries=4)
+        self.assertEqual(len(self.sleeps), 3)
+
+    def test_page_without_main_is_retried(self):
+        self.serve(BOT_PAGE, page(U + "2026/10/Nov26v1.jpg").encode())
+        self.assertIn("<main", check.get_page())
+        self.assertEqual(len(self.sleeps), 1)
+
 if __name__ == "__main__":
     unittest.main()

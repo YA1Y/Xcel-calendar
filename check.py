@@ -10,9 +10,10 @@ downloaded into OUT_DIR and reported on one line:
                             claim the same month: open the image to decide
   GONE      <month> <url>   recorded but no longer on the page (keep its events)
 Exit code: 0 nothing to do, 1 something needs reading, 2 no calendar images found
-(the page layout probably changed).
+(the page layout probably changed), 3 the site kept serving its bot-check page
+instead of an image (nothing is known; run again later).
 """
-import datetime, hashlib, json, pathlib, re, sys, urllib.request
+import datetime, hashlib, json, pathlib, re, sys, time, urllib.request
 
 PAGE = "https://swimxcel.org/calendar/"
 MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]
@@ -21,6 +22,32 @@ UA = {"User-Agent": "Mozilla/5.0 (xcel-calendar updater)"}
 def get(url):
     with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=60) as r:
         return r.read()
+
+class NotAnImage(Exception):
+    pass
+
+def is_image(body):
+    return (body.startswith((b"\x89PNG\r\n\x1a\n", b"\xff\xd8\xff", b"GIF8"))
+            or (body[:4] == b"RIFF" and body[8:12] == b"WEBP"))
+
+def get_image(url, tries=4, wait=15):
+    """Download an image. The site sometimes answers with a "One moment, please..."
+    bot-check HTML page instead; retry that, and raise NotAnImage if it persists."""
+    for i in range(tries):
+        body = get(url)
+        if is_image(body):
+            return body
+        if i < tries - 1:
+            time.sleep(wait)
+    raise NotAnImage(url)
+
+def get_page(tries=4, wait=15):
+    """The calendar page, retried while it comes back without <main> (e.g. the bot-check page)."""
+    for i in range(tries):
+        html = get(PAGE).decode("utf-8", "replace")
+        if re.search(r"<main\b", html) or i == tries - 1:
+            return html
+        time.sleep(wait)
 
 def calendar_images(html):
     """Full-size upload URLs of the images inside <main>, in page order; None if there is no <main>."""
@@ -61,7 +88,10 @@ def check(html, data, fetch, out, this_year):
     by_url = {v["url"]: k for k, v in recorded.items()}
     lines, seen, needs_reading = [], set(), False
     for url in urls:
-        body = fetch(url)
+        try:
+            body = fetch(url)
+        except NotAnImage:
+            return [f"NOT AN IMAGE after retries (the site's bot-check page?): {url}"], 3
         (out / url.rsplit("/", 1)[-1]).write_bytes(body)
         digest = hashlib.sha256(body).hexdigest()
         month = by_url.get(url) or month_from_filename(url, this_year)
@@ -82,6 +112,6 @@ def check(html, data, fetch, out, this_year):
 if __name__ == "__main__":
     out = pathlib.Path(sys.argv[1]); out.mkdir(parents=True, exist_ok=True)
     data = json.loads((pathlib.Path(__file__).parent / "events.json").read_text())
-    lines, code = check(get(PAGE).decode("utf-8", "replace"), data, get, out, datetime.date.today().year)
+    lines, code = check(get_page(), data, get_image, out, datetime.date.today().year)
     print("\n".join(lines))
     sys.exit(code)
