@@ -37,7 +37,7 @@ for p in d["practices"]:
     ds = date.replace("-", "")
     desc = f"{d['group']} practice. Source: {d['source']}" + (f"\n{note}" if note else "")
     event(f"grp5-{date}-{start.replace(':', '')}", [
-        f"SUMMARY:{esc('Swim practice - ' + pool + (' (Peddie meet swimmers only)' if note else ''))}",
+        f"SUMMARY:{esc('Swim practice - ' + pool + (f' ({note})' if note else ''))}",
         f"DTSTART;TZID=America/New_York:{ds}T{start.replace(':', '')}00",
         f"DTEND;TZID=America/New_York:{ds}T{end.replace(':', '')}00",
         f"LOCATION:{esc(d['pools'].get(pool, pool))}",
