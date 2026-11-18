@@ -20,6 +20,8 @@ calendar and compares it with `source_images`. Months that come down stay in
    - Exit 0: nothing to do (GONE lines are expected after a month comes down). Stop, no commit.
    - Exit 2: no calendar images found, so the page layout probably changed. Don't guess:
      tell the owner and stop.
+   - Exit 3: the site kept answering with its "One moment, please..." bot-check page instead
+     of an image (check.py already retried). Nothing is known: no commit; run it again later.
    - Exit 1: handle each NEW, CHANGED and UNKNOWN line below.
 2. Open each flagged image. The month and year are the ones **printed in the image's
    title**, not the filename (a filename can have a typo, e.g. `Jan26` for January 2027).
